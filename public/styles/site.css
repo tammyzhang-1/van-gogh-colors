@@ -1,0 +1,133 @@
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 3em;
+    /* height: 700px; */
+    max-width: 80%;
+    margin: auto auto 1em auto;
+}
+
+.row .picture {
+    max-width: 25%;
+    min-height: 100%;
+
+}
+
+.row img {
+    object-fit: cover;
+    max-width: 100%;
+    height: 100%;
+}
+
+.row .horizontal {
+    flex-grow: 1.5;
+    max-width: 40%;
+}
+
+.picture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+}
+
+p {
+    margin: 0.25em;
+}
+
+svg {
+    display: block;
+    margin-top: 2em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.title {
+    font-weight: bold;
+}
+
+.title-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #F2F2F0;
+    padding: 1em 3em 2em 3em;
+}
+
+h1 {
+    color: rgb(40, 40, 114)
+}
+
+footer {
+    background-color: #F2F2F0;
+    padding: 3em;
+    margin-top: 1em;
+}
+
+footer a {
+    color: rgb(40, 40, 114);
+    display: block;
+    text-align: center;
+    margin: auto;
+}
+
+.small.row {
+    height: auto;
+    align-items: flex-start;
+}
+
+.labels {
+    display: flex;
+    margin: 0;
+}
+
+.label-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1em;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2em;
+
+}
+
+.label-container {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.realism-section, .post-impressionism-section {
+    width: 1400px;
+    padding-top: 2em;
+    margin-top: 2em;
+    border: solid black;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.column svg {
+    width: 1200px;
+}
+
+.gridlines line {
+    stroke: #bbb;
+}
+
+.gridlines .domain {
+    stroke: none;
+}
+
+.avg_circle{
+    stroke: black;
+}

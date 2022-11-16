@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Colors of Van Gogh</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="public/styles/site.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div class="title-area">
+        <h1>Colors of Van Gogh</h1>
+
+        <p>Renowned artist Vincent Van Gogh is perhaps best known for completing famous works such as "Starry Night" and "The Sunflowers". However, Van Gogh was also one of the most prolific painters in the western art world, with over 2000 works created over the span of about 10 years. Many of his earlier works were done in the realist style, while his later works followed Post-Impressionism. Using a <a href="https://www.kaggle.com/datasets/pointblanc/colors-of-van-gogh">dataset</a> providing the five most common colors in each of Van Gogh's works, his color preferences across time and genre can be visualized here. </p>
+    </div>
+    <svg id="frequency_visualization" width="1400" height="700" style="border-style: solid; border-color: black;"></svg>
+    <svg id="year_visualization" width="1400" height="700" style="border-style: solid; border-color: black;"></svg>
+    <svg id="top5_year" width="1400" height="400" style="border-style: solid; border-color:black;"></svg>
+
+    <script>
+// ------------------------------------------------------------------------------------------------------------
+        //VISUALIZATION 1 - FREQUENCY OVERVIEW
+
+        // Usual code to set up the chart area, width, height, and margins
+        const svg1 = d3.select("svg#frequency_visualization");
+        const width1 = svg1.attr("width");
+        const height1 = svg1.attr("height");
+        const margin1 = {top: 10, right: 10, bottom: 20, left: 80};
+        const chartWidth1 = width1 - margin1.left - margin1.right;
+        const chartHeight1 = height1 - margin1.top - margin1.bottom;
+        let annotations1 = svg1.append("g").attr("id","annotations1");
+        let chartArea1 = svg1.append("g").attr("id","vis_canvas3").attr("transform",`translate(${margin1.left}, 10)`);
+        let freq_vis_title = svg1.append("g").attr("id", "freq_vis_title");
+        let freq_vis_ylabel = svg1.append("g").attr("id", "freq_vis_ylabel");
+
+        // Read in csv data
+        d3.csv("public/csv/named_colors.csv", d3.autoType)
+            .then( (data) => {
+
+                const freqExtent = d3.extent( data, d => d['count'])
+                const freqScale = d3.scaleLog().domain(freqExtent).range([chartHeight1, 40]);
+
+                const leftAxis = d3.axisLeft(freqScale).tickFormat(d3.format('d')).ticks(30);
+                const leftGridlines = d3.axisLeft(freqScale)
+                    .tickSize(-chartWidth1-10)
+                    .tickFormat('')
+                    .ticks(30);
+
+                data.forEach( (d, i) => {
+                chartArea1.append("line")
+                    .attr("x1", i * 10.44)
+                    .attr("x2", i * 10.44)
+                    .attr("y1", height1-30)
+                    .attr("y2", freqScale(d['count']))
+                    .style("stroke-width", "10.44px")
+                    .style("stroke", d['hex']);
+                })
+
+                annotations1.append('g')
+                    .attr("class", "y axis")
+                    .attr("transform", `translate(${margin1.left-10}, ${margin1.top})`)
+                    .style("font-size", "13px")
+                    .call(leftAxis)
+
+                annotations1.append('g')
+                    .attr("class", "y gridlines")
+                    .attr("transform", `translate(${margin1.left-10}, ${margin1.top})`)
+                    .call(leftGridlines)
+
+                // created title
+                freq_vis_title.append('text')
+                    .attr("x", width1/2.0)
+                    .attr("y", margin1.top+20)
+                    .attr("class", "chart_title")
+                    .style("font-size", "26px")
+                    .style("font-weight", "bold")
+                    .style("text-anchor", "middle")
+                    .text("Overall Most Frequent Colors");
+
+                // created y-axis label
+                freq_vis_ylabel.append("text")
+                    .attr("class", "y-axis label")
+                    .attr("x", -height1/2.0)
+                    .attr("y", 25)
+                    .attr("transform", "rotate(-90)")
+                    .style("font-size", "20px")
+                    .style("text-anchor", "middle")
+                    .text("Frequency");
+            });
+
+// ------------------------------------------------------------------------------------------------------------
+        //VISUALIZATION 2 - CHRONOLOGICAL OVERVIEW
+
+        // Usual code to set up the chart area, width, height, and margins
+        const svg2 = d3.select("svg#year_visualization");
+        const width2 = svg2.attr("width");
+        const height2 = svg2.attr("height");
+        const margin2 = {top: 60, right: 10, bottom: 30, left: 80};
+        const chartWidth2 = width2 - margin2.left - margin2.right;
+        const chartHeight2 = height2 - margin2.top - margin2.bottom;
+        let annotations = svg2.append("g").attr("id","annotations");
+        let chartArea2 = svg2.append("g").attr("id","vis_canvas")
+                        .attr("transform",`translate(${margin2.left},${margin2.top})`);
+        let year_vis_title = svg2.append("g").attr("id", "year_vis_title");
+        let year_vis_ylabel = svg2.append("g").attr("id", "year_vis_ylabel");
+
+        // Read in csv data
+        d3.csv("public/csv/long_merge_df_wfby.csv", d3.autoType)
+            .then( (data) => {
+                const freq_in_year_Extent = d3.extent(data, d=>d['year_freq_counter']);
+                const freq_in_year_Scale = d3.scaleLinear().domain(freq_in_year_Extent).range([0,chartWidth2]);
+                const yearExtent = d3.extent(data, d=>d['Year']);
+                const yearScale = d3.scaleLinear().domain(yearExtent).range([0,chartHeight2]);
+
+                const leftAxis = d3.axisLeft(yearScale).tickFormat(d3.format('d')).ticks(29);
+                const leftGridlines = d3.axisLeft(yearScale)
+                            .tickSize(-chartWidth2-10)
+                            .tickFormat('')
+                            .ticks(29);
+
+                annotations.append('g')
+                    .attr("class", "y axis")
+                    .attr("transform", `translate(${margin2.left-10}, ${margin2.top})`)
+                    .style("font-size", "13px")
+                    .call(leftAxis)
+
+                annotations.append('g')
+                    .attr("class", "y gridlines")
+                    .attr("transform", `translate(${margin2.left-10}, ${margin2.top})`)
+                    .call(leftGridlines)
+
+                // creating title
+                year_vis_title.append('text')
+                                .attr("x", width2/2.0)
+                                .attr("y", margin2.top/2.0)
+                                .attr("class", "chart_title")
+                                .style("font-size", "26px")
+                                .style("font-weight", "bold")
+                                .style("text-anchor", "middle")
+                                .text("Color of Works Over Time");
+
+                // labeling y-axis
+                year_vis_ylabel.append("text")
+                    .attr("class", "y-axis label")
+                    .attr("y", 26)
+                    .attr("x", -height2/2.0)
+                    .attr("transform", "rotate(-90)")
+                    .style("text-anchor", "middle")
+                    .style("font-size", "20px")
+                    .text("Year");
+
+                let year_bar = chartArea2.selectAll("g.year_bar")
+                          .data(data)
+                          .join('g')
+                          .attr('class', 'year_bar')
+                          .attr("year", d=>d['Year'])
+
+                year_bar.append("line")
+                        .attr("class", "color_line")
+                        .attr("x1", d=>freq_in_year_Scale(d['year_freq_counter']))
+                        .attr("y1", d=>yearScale(d['Year'])-9)
+                        .attr("x2", d=>freq_in_year_Scale(d['year_freq_counter']))
+                        .attr("y2", d=>yearScale(d['Year'])+9)
+                        .attr("stroke", d=> d['color'])
+                        .attr('stroke-width', 5);
+        });
+
+// ------------------------------------------------------------------------------------------------------------
+        //VISUALIZATION 3 - YEARLY FREQUENT COLORS AREA CHART
+
+        // Usual code to set up the chart area, width, height, and margins
+        let svg3 = d3.select("svg#top5_year")
+        let svg3_height = svg3.attr("height");
+        let svg3_width = svg3.attr("width")
+        const svg3_margins = {top: 60, right: 20, bottom: 60, left: 20};
+        const svg3_chartwidth = svg3_width - svg3_margins.left - svg3_margins.right;
+        const svg3_chartheight = svg3_height - svg3_margins.top - svg3_margins.bottom;
+        let svg3_annotations = svg3.append("g").attr("id","svg3_annotations");
+        let svg3_title = svg3.append("g").attr("id", "svg3_title");
+        let svg3_chartArea = svg3.append("g").attr("id","svg3_chart")
+                        .attr("transform",`translate(${svg3_margins.left},${svg3_margins.top})`);
+
+        // Read in csv data
+        d3.csv("public/csv/top5freq.csv", d3.autoType)
+            .then( (top5_data) => {
+
+                const yearExtent = d3.extent(top5_data, d=>d['year']);
+                const yearScale_widen = d3.scaleLinear().domain(yearExtent).range([20,svg3_chartwidth-20]);
+
+                const bottomAxis = d3.axisBottom(yearScale_widen).tickFormat(d3.format('d')).ticks(29);
+                const bottomGridlines = d3.axisBottom(yearScale_widen)
+                            .tickSize(-svg3_chartheight-10)
+                            .tickFormat('')
+                            .ticks(29);
+
+                svg3_annotations.append('g')
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${svg3_margins.left},${svg3_chartheight+svg3_margins.top+10})`)
+                    .style("font-size", "13px")
+                    .call(bottomAxis)
+                svg3_annotations.append('g')
+                    .attr("class", "x gridlines")
+                    .attr("transform",`translate(${svg3_margins.left},${svg3_chartheight+svg3_margins.top+10})`)
+                    .call(bottomGridlines)
+
+                // creating title
+                svg3_title.append('text')
+                            .attr("x", svg3_chartwidth/2.0)
+                            .attr("y", 30)
+                            .attr("class", "chart_title")
+                            .style("font-size", "26px")
+                            .style("font-weight", "bold")
+                            .style("text-anchor", "middle")
+                            .text("Top 5 Colors Per Year");
+
+                top5_data.forEach( (d, i) => {
+                    let jcolor_array = d.colors.split(",");
+                    let jcount_array = d.count.split(", ")
+
+                    const frequencyScale = d3.scaleLog().domain([1, 32]).range([10,50]);
+
+                    for(j=0; j<=4; j++){
+                        svg3_chartArea.append("circle")
+                            .attr("class", "avg_circle")
+                            .attr("cy", 20+50*j)
+                            .attr("cx", yearScale_widen(d.year))
+                            .attr("r", frequencyScale(jcount_array[j])/2.0)
+                            .style("fill", jcolor_array[j])
+                    }
+                });
+        });
+
+    </script>
+
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- REALISM SECTION -->
+<div class="realism-section">
+    <div class="column">
+        <h2 class="center">Color Palettes of Van Gogh's Realist Works</h2>
+        <h3 class="center">Most Frequent Colors</h3>
+        <svg id="realism" width = "1400" height = "300"></svg>
+    </div>
+    <div class="row">
+        <!-- Row of three pictures of examples of Van Gogh's Realist works, each with an svg showing their five main colors -->
+        <!-- All images were sourced from the links provided in our Kaggle dataset  -->
+        <div class="picture">
+            <img src="public/images/head-of-a-peasant-woman.jpeg" alt = ""/>
+            <p class="title">Head of a Peasant Woman (1885)</p>
+            <svg id="pic1" width="260" height="100"></svg>
+        </div>
+        <div class="horizontal picture">
+            <img src="public/images/potato-eaters.jpeg" alt = ""/>
+            <p class="title">The Potato Eaters (1885)</p>
+            <svg id="pic2" width="260" height="100"></svg>
+        </div>
+        <div class="picture">
+            <img src="public/images/the-state-lottery.jpeg" alt = ""/>
+            <p class="title">The State Lottery Office (1882)</p>
+            <svg id="pic3" width="260" height="100"></svg>
+        </div>
+    </div>
+</div>
+
+
+ <!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- POST-IMPRESSIONISM SECTION -->
+<div class="post-impressionism-section">
+    <div class="column">
+        <h2 class="center">Color Palettes of Van Gogh's Post-Impressionist Works</h2>
+        <h3 class="center">Most Frequent Colors</h3>
+        <svg id="postimpressionism" width = "1400" height = "200"></svg>
+    </div>
+    <div class="row">
+        <!-- Row of three pictures of examples of Van Gogh's Post-Impressionist works, each with an svg showing their five main colors -->
+        <!-- All images were sourced from the links provided in our Kaggle dataset  -->
+        <div class="picture">
+            <img src="public/images/sunflowers.jpeg" alt = ""/>
+            <p class="title">Sunflowers (1888)</p>
+            <svg id="pic4" width="260" height="100"></svg>
+        </div>
+        <div class="horizontal picture">
+            <img src="public/images/the-starry-night.jpeg" alt = ""/>
+            <p class="title">The Starry Night (1889)</p>
+            <svg id="pic5" width="260" height="100"></svg>
+        </div>
+        <div class="picture">
+            <img src="public/images/self-portrait.jpeg" alt = ""/>
+            <p class="title">Self-Portrait (1889)</p>
+            <svg id="pic6" width="260" height="100"></svg>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // selecting svg displaying each example picture's five main colors as circles underneath the image
+    const svg_pic1 = d3.select("svg#pic1");
+    const svg_pic2 = d3.select("svg#pic2");
+    const svg_pic3 = d3.select("svg#pic3")
+    const svg_pic4 = d3.select("svg#pic4")
+    const svg_pic5 = d3.select("svg#pic5");
+    const svg_pic6 = d3.select("svg#pic6")
+
+    // selecting svgs displaying Van Gogh's two main style palettes
+    const svg4 = d3.select("svg#postimpressionism")
+    const svg5 = d3.select("svg#realism")
+
+    // --------------------Realist examples --------------------------
+
+    // Realism color palette visualization
+    d3.csv("public/csv/realism_colors.csv", d3.autoType)
+        .then( (data) => {
+            data.forEach( (d, i) => {
+            // creating circles for each of 5 colors
+            svg5.append("circle")
+                .attr("cx", d['cx'])
+                .attr("cy", 100)
+                .attr("r", d['count'])
+                .style("fill", d['color'])
+                .style("stroke", 'black')
+                .style("stroke-width", '1px');
+
+            // creating label with name of color
+            svg5.append('text')
+                        .attr("x", d['cx'])
+                        .attr("y", 220)
+                        .style("font-size", "16px")
+                        .style("text-anchor", "middle")
+                        .text(d['color']);
+
+            // creating label with count for that color
+            svg5.append('text')
+                        .attr("x", d['cx'])
+                        .attr("y", 240)
+                        .style("font-size", "16px")
+                        .style("text-anchor", "middle")
+                        .style("font-style", "italic")
+                        .text(d['count'] + " works");
+            }
+        )});
+
+    // Head of a Peasant Woman
+    d3.csv("public/csv/peasant_woman.csv", d3.autoType)
+    .then( (data) => {
+
+     data.forEach( (d, i) => {
+     svg_pic1.append("circle")
+           .attr("cx", i * 30 + 70)
+           .attr("cy", 20)
+           .attr("r", 10)
+           .style("fill", d['Colors']);
+        }
+    )});
+
+    // The Potato Eaters
+    d3.csv("public/csv/potato_eaters.csv", d3.autoType)
+        .then( (data) => {
+
+            data.forEach( (d, i) => {
+            svg_pic2.append("circle")
+                .attr("cx", i * 30 + 70)
+                .attr("cy", 20)
+                .attr("r", 10)
+                .style("fill", d['Colors']);
+            }
+    )});
+
+    // The State Lottery Office
+    d3.csv("public/csv/state_lottery.csv", d3.autoType)
+        .then( (data) => {
+
+            data.forEach( (d, i) => {
+            svg_pic3.append("circle")
+                .attr("cx", i * 30 + 70)
+                .attr("cy", 20)
+                .attr("r", 10)
+                .style("fill", d['Colors']);
+            }
+    )});
+
+
+    // --------------------Post-Impressionist examples --------------------------
+
+    // Post-Impressionism color palette visualization
+    d3.csv("public/csv/post_impressionism_colors.csv", d3.autoType)
+        .then( (data) => {
+            // creating circles for each of 5 colors
+            data.forEach( (d, i) => {
+            svg4.append("circle")
+                .attr("cx", d['cx'])
+                .attr("cy", 50)
+                .attr("r", d['count'])
+                .style("fill", d['color'])
+                .style("stroke", 'black')
+                .style("stroke-width", '1px');
+
+            // creating label with name of color
+            svg4.append('text')
+                        .attr("x", d['cx'])
+                        .attr("y", 120)
+                        .style("font-size", "16px")
+                        .style("text-anchor", "middle")
+                        .text(d['color']);
+
+            // creating label with count for that color
+            svg4.append('text')
+                        .attr("x", d['cx'])
+                        .attr("y", 140)
+                        .style("font-size", "16px")
+                        .style("text-anchor", "middle")
+                        .style("font-style", "italic")
+                        .text(d['count'] + " works");
+            }
+    )});
+
+    // Sunflowers
+    d3.csv("public/csv/sunflowers.csv", d3.autoType)
+        .then( (data) => {
+
+        data.forEach( (d, i) => {
+        svg_pic4.append("circle")
+            .attr("cx", i * 30 + 70)
+            .attr("cy", 20)
+            .attr("r", 10)
+            .style("fill", d['Colors']);
+        }
+    )});
+
+    // The Starry Night
+    d3.csv("public/csv/starry_night.csv", d3.autoType)
+        .then( (data) => {
+
+        data.forEach( (d, i) => {
+        svg_pic5.append("circle")
+            .attr("cx", i * 30 + 70)
+            .attr("cy", 20)
+            .attr("r", 10)
+            .style("fill", d['Colors']);
+        }
+    )});
+
+    // Self-Portrait
+    d3.csv("public/csv/self_portrait.csv", d3.autoType)
+        .then( (data) => {
+
+        data.forEach( (d, i) => {
+        svg_pic6.append("circle")
+            .attr("cx", i * 30 + 70)
+            .attr("cy", 20)
+            .attr("r", 10)
+            .style("fill", d['Colors']);
+        }
+    )});
+</script>
+
+<footer>
+    <a href = "https://github.com/tammyzhang-1/van-gogh-colors">See the code behind the visualizations here.</a>
+</footer>
+</body>
+</html>
